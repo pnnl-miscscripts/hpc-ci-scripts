@@ -1,0 +1,102 @@
+include:
+  - remote: 'https://raw.githubusercontent.com/pnnl-miscscripts/gitlab-lib/v1/gitlab-lib.yaml'
+
+.pnnl_default_vars:
+  variables:
+    # TODO - have stage that verifies `test.sh` is "correct":
+    #           - uses /bin/bash not anything else
+    #           - has the correct shebang without `-xve`
+    #           - has the correct exit/cleanup scripts w/ return statement
+    TEST_SCRIPT: ./scripts/test.sh
+    GIT_SUBMODULE_STRATEGY: none
+    SLURM_Q: shared,short
+    NTASKS: 3
+    TIME_LIMIT: 1:00:00
+    SLURM_ACCT: ops
+    SLURM_ARGS: " --exclusive "
+    MY_CLUSTER: deception
+    WORKDIR_SUFFIX: $MY_CLUSTER
+    OUTPUT_SUFFIX: $WORKDIR_SUFFIX
+
+.pnnl_after_script_template:
+  extends: .pnnl_default_vars
+  after_script:
+    - |
+      export WORKDIR="$HOME/gitlab/${CI_PIPELINE_ID}/${WORKDIR_SUFFIX}/"
+      # Iterate over possible jobid named files (jobid_%J)
+      job_ids="$WORKDIR/jobid_*"
+      for job in $job_ids
+      do
+        if [[ -f "$job" ]]; then
+          jobid=$(cat "$job")
+          scancel $jobid
+        fi
+      done
+      rm -rf $WORKDIR
+
+.pnnl_cluster_test:
+  extends:
+    - .pnnl_after_script_template
+    - .pnnl_default_vars
+  script:
+    - |
+      #  NOTES:  WORKDIR is on constance/deception/newell
+      #          ./      is only on the Kubernetes instance
+      #
+      export WORKDIR="$HOME/gitlab/${CI_PIPELINE_ID}/${WORKDIR_SUFFIX}"
+      if [[ ! -d "$WORKDIR" ]]; then
+        # if workdir already exists, we're in the testing job
+        mkdir -p "$WORKDIR"
+        cp -r . "$WORKDIR"
+      fi
+
+      cd "$WORKDIR"
+
+      # Unique output file for this stage
+      output="output${OUTPUT_SUFFIX}"
+      [ -f $output ] && rm $output
+      touch $output
+      tail -f $output &
+      tailpid=$!
+
+      # jobid used in pnnl_after_script_template to cancel job if cancelled or
+      # timed out by gitlab through the UI
+      # TODO - maybe fix the permissions on this outside of pipeline
+      chmod +x $TEST_SCRIPT
+      jobid=$(sbatch --export=ALL -A $SLURM_ACCT $SLURM_ARGS --ntasks=$NTASKS -p $SLURM_Q -o $output -e $output -t $TIME_LIMIT $TEST_SCRIPT)
+      export jobid=$(echo $jobid | cut -f4 -d' ')
+      # Unique jobid filename for this job
+      echo $jobid > "$WORKDIR/jobid_${jobid}"
+      res=1
+      while :;
+      do
+        if [[ "$(awk 'BEGIN{i=0}/BUILD_STATUS/{i++}END{print i}' $output)" != "0" ]]; then
+          kill $tailpid
+          echo 'Last tail of build $output:'
+          tail -n 200 $output
+          # Original line below --- res=$(grep BUILD_STATUS $output | tail -n 1 | cut -f2 -d':')
+          grep BUILD_STATUS $output
+          res=$(grep BUILD_STATUS $output | tail -n 1 | cut -f2 -d':')
+          # res=$(grep BUILD_STATUS $output | tail -n 5 )
+          break
+        fi
+        sleep 10
+      done
+      echo "Finished batch job with exit code: $res"
+      rm "$WORKDIR/jobid_${jobid}"
+      exit $res
+
+.pnnl_cleanup_template:
+  resource_group: cleanup
+  allow_failure: true
+  image: ubuntu:22.04
+  stage: .pre
+  variables:
+    # No need to clone for cleanup jobs
+    GIT_STRATEGY: none
+    MIN_THRESHOLD: 360
+  script:
+    - export WORKDIR="$HOME/gitlab/"
+    # clears directory of files more than MIN_THRESHOLD minutes old
+    - find $WORKDIR -type d -mindepth 1 -mmin +$MIN_THRESHOLD -prune -print -exec rm -rf {} \; || true
+    - ls -hal $WORKDIR
