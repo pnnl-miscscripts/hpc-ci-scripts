@@ -116,6 +116,8 @@ include:
     USER: svcmlops
     FORCE_CLEAN: "false"
     PYTHON_VERSION: 3.11.5
+    COMPILER: gcc
+    COMPILER_VERSION: 9.1.0
   before_script:
     - |
       # Create the shell script to be ran in SLURM job
@@ -162,9 +164,9 @@ include:
       export HTTPS_PROXY=http://proxy01.pnl.gov:3128
       export https_proxy=http://proxy01.pnl.gov:3128
       # This is debugging/useful for cleanup
-      # If no `.git` folder in directory or no setup-spack.sh script or we are force cleaning with FORCE_CLEAN,
+      # If there is no `.git` folder in directory or no setup-spack.sh script or we are force cleaning with FORCE_CLEAN,
       # force clean before clone
-      if [[ ! -d $SPACK_INSTALL/.git ]] || [[ ! -f $SPACK_INSTALL/share/spack/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
+      if [[ ! -d $SPACK_INSTALL/.git ]] || [[ -f $SPACK_INSTALL/share/spack/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
         rm -rfd $SPACK_INSTALL &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
@@ -179,6 +181,7 @@ include:
       export TMP=$tempdir &&
       export TMPDIR=$tempdir &&
       export SPACK_DISABLE_LOCAL_CONFIG=1 &&
+      rm -rfd ~/.spack &&
 
       # Configure spack's python for use
       module load python/$PYTHON_VERSION &&
@@ -190,6 +193,12 @@ include:
       spack env create -d $(pwd)/tmp-env &&
       spack env activate -d $(pwd)/tmp-env &&
       cp $SPACK_YAML $(pwd)/tmp-env/spack.yaml &&
+
+      # Configure compilers...
+      module load $COMPILER/$COMPILER_VERSION &&
+      spack -e tmp-env compiler find &&
+
+      # Build modules
       spack -e tmp-env concretize -f &&
       spack -e tmp-env install -j $NUM_CORES &&
       spack -e tmp-env module tcl refresh --force &&
