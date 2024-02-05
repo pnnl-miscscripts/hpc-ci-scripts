@@ -111,6 +111,7 @@ include:
     SPACK_INSTALL: /rcfs/scratch/$USER/spack
     SPACK_YAML: ./spack.yaml
     NUM_CORES: 64
+    USER: svcmlops
   before_script:
     - |
       # Adding this script to heredoc to run in SLURM job
