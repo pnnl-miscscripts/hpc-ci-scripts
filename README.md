@@ -1,3 +1,3 @@
-# README
+# hpc-ci-scripts
 
-TODO
+This repository has some basic bash scripts and YAML for GitLab CI/CD jobs to run on PNNL HPC resources.
