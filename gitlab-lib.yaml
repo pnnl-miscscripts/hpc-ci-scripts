@@ -229,5 +229,7 @@ include:
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
       fi
+
+      spack $SPACK_DEBUG -e tmp-env spack clean -abm
       exit $ret_code
       EOF   
