@@ -118,6 +118,8 @@ include:
     PYTHON_VERSION: 3.11.5
     COMPILER: gcc
     COMPILER_VERSION: 9.1.0
+    VERBOSE_OUTPUT: "false"
+    VERBOSE_SPACK: "false"
   before_script:
     - |
       # Create the shell script to be ran in SLURM job
@@ -155,14 +157,15 @@ include:
 
         exit $2
       }
-      set -xv
+      # If verbose output, toggle xv
+      if [[ $VERBOSE_OUTPUT == "true" ]]; then
+        set -xv
+      fi
       . /etc/bashrc
       groups
       module purge
       module load git
       git --version
-      export HTTPS_PROXY=http://proxy01.pnl.gov:3128
-      export https_proxy=http://proxy01.pnl.gov:3128
       # This is debugging/useful for cleanup
       # If there is no `.git` folder in directory or no setup-spack.sh script or we are force cleaning with FORCE_CLEAN,
       # force clean before clone
@@ -181,29 +184,36 @@ include:
       export TMP=$tempdir &&
       export TMPDIR=$tempdir &&
       export SPACK_DISABLE_LOCAL_CONFIG=1 &&
-      rm -rfd ~/.spack &&
 
       # Configure spack's python for use
       module load python/$PYTHON_VERSION &&
       export SPACK_PYTHON=$(which python3) &&
 
+      # If verbose spack, set flag to `--debug`
+      if [[ $VERBOSE_SPACK == "true" ]]; then
+        export SPACK_DEBUG="--debug"
+      fi
+
       source ./share/spack/setup-env.sh &&
       popd &&
       spack -V &&
-      spack env create -d $(pwd)/tmp-env &&
-      spack env activate -d $(pwd)/tmp-env &&
+      spack $SPACK_DEBUG env create -d $(pwd)/tmp-env &&
+      spack $SPACK_DEBUG env activate -d $(pwd)/tmp-env &&
       cp $SPACK_YAML $(pwd)/tmp-env/spack.yaml &&
 
       # Configure compilers...
       module load $COMPILER/$COMPILER_VERSION &&
-      spack -e tmp-env compiler find &&
+      spack $SPACK_DEBUG -e tmp-env compiler find &&
+      spack $SPACK_DEBUG -e tmp-env external find &&
 
       # Build modules
-      spack -e tmp-env concretize -f &&
-      spack -e tmp-env install -j $NUM_CORES &&
-      spack -e tmp-env module tcl refresh --force &&
+      spack $SPACK_DEBUG -e tmp-env concretize -f &&
+      spack $SPACK_DEBUG -e tmp-env install -j $NUM_CORES &&
+      spack $SPACK_DEBUG -e tmp-env module tcl refresh --force &&
       chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
       ret_code=$?
-      set +xv
+      if [[ $VERBOSE_OUTPUT == "true" ]]; then
+        set +xv
+      fi
       exit $ret_code
       EOF   
