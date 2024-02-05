@@ -162,7 +162,7 @@ include:
       # This is debugging/useful for cleanup
       # If no `.git` folder in directory or no setup-spack.sh script or we are force cleaning with FORCE_CLEAN,
       # force clean before clone
-      if [[ ! -d $SPACK_INSTALL/.git ]] || [[ ! -f $SPACK_INSTALL/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
+      if [[ ! -d $SPACK_INSTALL/.git ]] || [[ ! -f $SPACK_INSTALL/share/spack/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
         rm -rfd $SPACK_INSTALL &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
