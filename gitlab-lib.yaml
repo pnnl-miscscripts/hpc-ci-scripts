@@ -115,6 +115,7 @@ include:
     NUM_CORES: 64
     USER: svcmlops
     FORCE_CLEAN: "false"
+    PYTHON_VERSION: 3.11.5
   before_script:
     - |
       # Create the shell script to be ran in SLURM job
@@ -171,12 +172,21 @@ include:
       # Fetch SPACK_VERSION's latest changes and reset branch to that
       git fetch origin $SPACK_VERSION &&
       git reset --hard origin/$SPACK_VERSION &&
+
+      # Attempt to set spack temp directories to make things easier for users...
+      export tempdir=$SPACK_INSTALL/../spack-tmp &&
+      export user_cache_path=$tempdir &&
+      export TMP=$tempdir &&
+      export TMPDIR=$tempdir &&
+      export SPACK_DISABLE_LOCAL_CONFIG=1 &&
+
+      # Configure spack's python for use
+      module load python/$PYTHON_VERSION &&
+      export SPACK_PYTHON=$(which python3) &&
+
       source ./share/spack/setup-env.sh &&
       popd &&
       spack -V &&
-      # Attempt to set spack temp directories to make things easier for users...
-      export tempdir=/rcfs/scratch/$USER/spack-tmp &&
-      export user_cache_path=$tempdir &&
       spack env create -d $(pwd)/tmp-env &&
       spack env activate -d $(pwd)/tmp-env &&
       cp $SPACK_YAML $(pwd)/tmp-env/spack.yaml &&
