@@ -40,7 +40,7 @@ include:
     - .pnnl_default_vars
   script:
     - |
-      #  Run TEST_SCRIPT in a SLURM job on the HPC cluster
+      # Run TEST_SCRIPT in a SLURM job on the HPC cluster
       # 
       #  NOTES:  WORKDIR is on constance/deception/newell
       #          ./      is only on the Kubernetes instance
@@ -115,7 +115,7 @@ include:
     NUM_CORES: 64
     USER: svcmlops
     FORCE_CLEAN: "false"
-    PYTHON_VERSION: 3.11.5
+    PYTHON_VERSION: miniconda23.5.2
     COMPILER: gcc
     COMPILER_VERSION: 9.1.0
     VERBOSE_OUTPUT: "false"
@@ -192,6 +192,10 @@ include:
 
       # Configure spack's python for use
       module load python/$PYTHON_VERSION &&
+      # If miniconda at start of python version, load extra shell script for conda
+      if [[ $PYTHON_VERSION == "miniconda"* ]]; then
+        source /share/apps/python/$PYTHON_VERSION/etc/profile.d/conda.sh
+      fi &&
       export SPACK_PYTHON=$(which python3) &&
 
       # If verbose spack, set flag to `--debug`
