@@ -176,6 +176,7 @@ include:
       # force clean before clone
       if [[ ! -d $SPACK_INSTALL/.git ]] || [[ -f $SPACK_INSTALL/share/spack/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
         rm -rfd $SPACK_INSTALL &&
+        rm -rfd ~/.spack &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
       pushd $SPACK_INSTALL &&
@@ -189,6 +190,7 @@ include:
       export TMP=$tempdir &&
       export TMPDIR=$tempdir &&
       export SPACK_DISABLE_LOCAL_CONFIG=1 &&
+      export SPACK_USER_CACHE_PATH=$user_cache_path &&
 
       # Configure spack's python for use
       module load python/$PYTHON_VERSION &&
@@ -214,6 +216,9 @@ include:
       module load $COMPILER/$COMPILER_VERSION &&
       spack $SPACK_DEBUG -e tmp-env compiler find &&
       spack $SPACK_DEBUG -e tmp-env external find &&
+
+      # Print config for debugging
+      spack -e tmp-env config get config
 
       # Build modules
       spack $SPACK_DEBUG -e tmp-env concretize -f &&
