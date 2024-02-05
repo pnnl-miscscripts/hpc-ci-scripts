@@ -152,6 +152,10 @@ include:
         exit $2
       }
       set -xv
+      . /etc/bashrc
+      module purge
+      module load git
+      git --version
       export HTTPS_PROXY=http://proxy01.pnl.gov:3128
       export https_proxy=http://proxy01.pnl.gov:3128
       # This is debugging/useful for cleanup
