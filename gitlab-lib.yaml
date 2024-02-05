@@ -164,12 +164,12 @@ include:
       # force clean before clone
       if [[ ! -d $SPACK_INSTALL/.git ]] || [[ ! -f $SPACK_INSTALL/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
         rm -rfd $SPACK_INSTALL &&
-        git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL &&
-        git checkout -b $SPACK_VERSION --track origin/$SPACK_VERSION
+        git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
       pushd $SPACK_INSTALL &&
-      git checkout $SPACK_VERSION &&
-      git pull &&
+      # Fetch SPACK_VERSION's latest changes and reset branch to that
+      git fetch origin $SPACK_VERSION &&
+      git reset --hard origin/$SPACK_VERSION &&
       source ./share/spack/setup-env.sh &&
       popd &&
       spack -V &&
