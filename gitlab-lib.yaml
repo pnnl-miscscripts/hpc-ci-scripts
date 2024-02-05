@@ -168,8 +168,8 @@ include:
       git --version
 
       # Configure proxy...
-      export HTTPS_PROXY=http://proxy01.pnl.gov:3128
-      export https_proxy=http://proxy01.pnl.gov:3128
+      # export HTTPS_PROXY=http://proxy01.pnl.gov:3128
+      # export https_proxy=http://proxy01.pnl.gov:3128
 
       # This is debugging/useful for cleanup
       # If there is no `.git` folder in directory or no setup-spack.sh script or we are force cleaning with FORCE_CLEAN,
