@@ -100,3 +100,36 @@ include:
     # clears directory of files more than MIN_THRESHOLD minutes old
     - find $WORKDIR -type d -mindepth 1 -mmin +$MIN_THRESHOLD -prune -print -exec rm -rf {} \; || true
     - ls -hal $WORKDIR
+
+# --- Spack TCL module utilities ---
+.spack_tcl_module:
+  extends: .pnnl_cluster_test
+  variables:
+    TEST_SCRIPT: ./spack_script.sh
+    # This has to be a valid branch/remote ref - raw commit hash could work but would need to refactor
+    SPACK_VERSION: develop
+    SPACK_INSTALL: /rcfs/scratch/$USER/spack
+    SPACK_YAML: ./spack.yaml
+    NUM_CORES: 64
+  before_script:
+    - |
+      # Adding this script to heredoc to run in SLURM job
+      cat << 'EOF' > spack_script.sh
+      #!/bin/bash
+      git clone https://github.com/spack/spack.git $SPACK_INSTALL &&
+      pushd $SPACK_INSTALL &&
+      git checkout --detach origin/$SPACK_VERSION &&
+      source ./share/spack/setup-env.sh &&
+      popd &&
+      spack -V &&
+      # Attempt to set spack temp directories to make things easier for users...
+      export tempdir=/rcfs/scratch/$USER/spack-tmp &&
+      export user_cache_path=$tempdir &&
+      spack env create -d $(pwd)/tmp-env &&
+      spack env activate -d $(pwd)/tmp-env &&
+      cp $SPACK_YAML $(pwd)/tmp-env/spack.yaml &&
+      spack -e tmp-env concretize -f &&
+      spack -e tmp-env install -j $NUM_CORES &&
+      spack -e tmp-env module tcl refresh --force &&
+      chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
+      EOF   
