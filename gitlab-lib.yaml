@@ -155,9 +155,9 @@ include:
       export HTTPS_PROXY=http://proxy01.pnl.gov:3128
       export https_proxy=http://proxy01.pnl.gov:3128
       # This is debugging/useful for cleanup
-      # If no `.git` folder in directory and not setup-spack.sh script, 
+      # If no `.git` folder in directory or no setup-spack.sh script, 
       # force clean before clone
-      if [[ ! -d $SPACK_INSTALL/.git && ! -f $SPACK_INSTALL/setup-spack.sh ]]; then
+      if [[ ! -d $SPACK_INSTALL/.git ]] || [[ ! -f $SPACK_INSTALL/share/spack/setup-env.sh ]]; then
         rm -rfd $SPACK_INSTALL &&
         git clone https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
@@ -176,4 +176,6 @@ include:
       spack -e tmp-env install -j $NUM_CORES &&
       spack -e tmp-env module tcl refresh --force &&
       chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
+      ret_code=$?
+      exit $ret_code
       EOF   
