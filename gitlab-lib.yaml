@@ -176,6 +176,8 @@ include:
       # force clean before clone
       if [[ ! -d $SPACK_INSTALL/.git ]] || [[ -f $SPACK_INSTALL/share/spack/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
         rm -rfd $SPACK_INSTALL &&
+        # Need to change this if spack-tmp is ever changed...
+        rm -rfd $SPACK_INSTALL/../spack-tmp &&
         rm -rfd ~/.spack &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
@@ -209,13 +211,12 @@ include:
       popd &&
       spack -V &&
       spack $SPACK_DEBUG env create -d $(pwd)/tmp-env &&
-      spack $SPACK_DEBUG env activate -d $(pwd)/tmp-env &&
       cp $SPACK_YAML $(pwd)/tmp-env/spack.yaml &&
 
       # Configure compilers...
       module load $COMPILER/$COMPILER_VERSION &&
       spack $SPACK_DEBUG -e tmp-env compiler find &&
-      spack $SPACK_DEBUG -e tmp-env external find &&
+      spack $SPACK_DEBUG -e tmp-env external find --exclude curl &&
 
       # Print config for debugging
       spack -e tmp-env config get config &&
