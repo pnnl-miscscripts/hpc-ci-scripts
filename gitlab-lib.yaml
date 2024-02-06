@@ -218,12 +218,12 @@ include:
       spack $SPACK_DEBUG -e tmp-env external find &&
 
       # Print config for debugging
-      spack -e tmp-env config get config
+      spack -e tmp-env config get config &&
 
       # Build modules
       spack $SPACK_DEBUG -e tmp-env concretize -f &&
       spack $SPACK_DEBUG -e tmp-env install -j $NUM_CORES &&
-      spack $SPACK_DEBUG -e tmp-env module tcl refresh --force &&
+      spack $SPACK_DEBUG -e tmp-env module tcl refresh -y &&
       chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
       ret_code=$?
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
