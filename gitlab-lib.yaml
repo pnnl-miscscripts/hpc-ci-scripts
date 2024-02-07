@@ -195,7 +195,7 @@ include:
       export SPACK_USER_CACHE_PATH=$user_cache_path &&
 
       # Configure spack's python for use
-      module load python/$PYTHON_VERSION > dev/null 2>&1 &&
+      module load python/$PYTHON_VERSION &&
       # If miniconda at start of python version, load extra shell script for conda
       if [[ $PYTHON_VERSION == "miniconda"* ]]; then
         source /share/apps/python/$PYTHON_VERSION/etc/profile.d/conda.sh
@@ -205,7 +205,7 @@ include:
       # If verbose spack, set flag to `--debug`
       if [[ $VERBOSE_SPACK == "true" ]]; then
         export SPACK_DEBUG="--debug"
-      fi
+      fi &&
 
       source ./share/spack/setup-env.sh &&
       popd &&
@@ -224,14 +224,18 @@ include:
       # Build modules
       spack $SPACK_DEBUG -e tmp-env concretize -f &&
       spack $SPACK_DEBUG -e tmp-env install -j $NUM_CORES --fail-fast &&
-      spack $SPACK_DEBUG -e tmp-env module tcl refresh -y &&
+      spack $SPACK_DEBUG -e tmp-env module tcl refresh -y
+      ret_code=$?
+
+      # Cleanup spack
+      spack $SPACK_DEBUG -e tmp-env spack clean -abm
+      
       chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
       chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > dev/null 2>&1
-      ret_code=$?
+      
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
       fi
-
-      spack $SPACK_DEBUG -e tmp-env spack clean -abm
+      
       exit $ret_code
       EOF   
