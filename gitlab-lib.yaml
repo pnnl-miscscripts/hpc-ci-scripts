@@ -230,8 +230,8 @@ include:
       # Cleanup spack
       spack $SPACK_DEBUG -e tmp-env clean -abm
       
-      chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
-      chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > dev/null 2>&1
+      chmod -R ugo+wrx $SPACK_INSTALL > /dev/null 2>&1
+      chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > /dev/null 2>&1
       
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
