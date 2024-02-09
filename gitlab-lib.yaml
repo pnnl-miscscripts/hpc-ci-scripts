@@ -176,6 +176,8 @@ include:
       # force clean before clone
       if [[ ! -d $SPACK_INSTALL/.git ]] || [[ -f $SPACK_INSTALL/share/spack/setup-spack.sh ]] || [[ $FORCE_CLEAN == "true" ]]; then
         rm -rfd $SPACK_INSTALL &&
+        # Need to change this if spack-tmp is ever changed...
+        rm -rfd $SPACK_INSTALL/../spack-tmp &&
         rm -rfd ~/.spack &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
@@ -193,7 +195,7 @@ include:
       export SPACK_USER_CACHE_PATH=$user_cache_path &&
 
       # Configure spack's python for use
-      module load python/$PYTHON_VERSION > dev/null 2>&1 &&
+      module load python/$PYTHON_VERSION > /dev/null 2>&1 &&
       # If miniconda at start of python version, load extra shell script for conda
       if [[ $PYTHON_VERSION == "miniconda"* ]]; then
         source /share/apps/python/$PYTHON_VERSION/etc/profile.d/conda.sh
@@ -203,19 +205,18 @@ include:
       # If verbose spack, set flag to `--debug`
       if [[ $VERBOSE_SPACK == "true" ]]; then
         export SPACK_DEBUG="--debug"
-      fi
+      fi &&
 
       source ./share/spack/setup-env.sh &&
       popd &&
       spack -V &&
       spack $SPACK_DEBUG env create -d $(pwd)/tmp-env &&
-      spack $SPACK_DEBUG env activate -d $(pwd)/tmp-env &&
       cp $SPACK_YAML $(pwd)/tmp-env/spack.yaml &&
 
       # Configure compilers...
       module load $COMPILER/$COMPILER_VERSION &&
       spack $SPACK_DEBUG -e tmp-env compiler find &&
-      spack $SPACK_DEBUG -e tmp-env external find &&
+      spack $SPACK_DEBUG -e tmp-env external find --exclude curl &&
 
       # Print config for debugging
       spack -e tmp-env config get config &&
@@ -223,14 +224,18 @@ include:
       # Build modules
       spack $SPACK_DEBUG -e tmp-env concretize -f &&
       spack $SPACK_DEBUG -e tmp-env install -j $NUM_CORES --fail-fast &&
-      spack $SPACK_DEBUG -e tmp-env module tcl refresh -y &&
-      chmod -R ugo+wrx $SPACK_INSTALL > dev/null 2>&1
-      chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > dev/null 2>&1
+      spack $SPACK_DEBUG -e tmp-env module tcl refresh -y
       ret_code=$?
+
+      # Cleanup spack
+      spack $SPACK_DEBUG -e tmp-env clean -abm
+      
+      chmod -R ugo+wrx $SPACK_INSTALL > /dev/null 2>&1
+      chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > /dev/null 2>&1
+      
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
       fi
-
-      spack $SPACK_DEBUG -e tmp-env spack clean -abm
+      
       exit $ret_code
       EOF   
