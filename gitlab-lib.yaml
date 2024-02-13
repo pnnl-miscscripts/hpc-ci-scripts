@@ -216,7 +216,6 @@ include:
       # Configure compilers...
       module load $COMPILER/$COMPILER_VERSION &&
       spack $SPACK_DEBUG -e tmp-env compiler find &&
-      spack $SPACK_DEBUG -e tmp-env external find --exclude curl &&
 
       # Print config for debugging
       spack -e tmp-env config get config &&
