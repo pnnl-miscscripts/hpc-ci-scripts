@@ -115,6 +115,7 @@ include:
     NUM_CORES: 64
     USER: svcmlops
     FORCE_CLEAN: "false"
+    SPACK_CLEAN: "false"
     PYTHON_VERSION: miniconda23.5.2
     COMPILER: gcc
     COMPILER_VERSION: 9.1.0
@@ -227,7 +228,9 @@ include:
       ret_code=$?
 
       # Cleanup spack
-      spack $SPACK_DEBUG -e tmp-env clean -abm
+      if [[ $SPACK_CLEAN == "true" ]]; then
+        spack $SPACK_DEBUG -e tmp-env clean -abm
+      fi
       
       chmod -R ugo+wrx $SPACK_INSTALL > /dev/null 2>&1
       chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > /dev/null 2>&1
