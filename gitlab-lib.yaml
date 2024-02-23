@@ -116,7 +116,7 @@ include:
     USER: svcmlops
     FORCE_CLEAN: "false"
     SPACK_CLEAN: "false"
-    PYTHON_VERSION: miniconda23.5.2
+    HPC_PYTHON_MODULE: miniconda23.5.2
     COMPILER: gcc
     COMPILER_VERSION: 9.1.0
     VERBOSE_OUTPUT: "false"
@@ -196,10 +196,10 @@ include:
       export SPACK_USER_CACHE_PATH=$user_cache_path &&
 
       # Configure spack's python for use
-      module load python/$PYTHON_VERSION > /dev/null 2>&1 &&
+      module load python/$HPC_PYTHON_MODULE > /dev/null 2>&1 &&
       # If miniconda at start of python version, load extra shell script for conda
-      if [[ $PYTHON_VERSION == "miniconda"* ]]; then
-        source /share/apps/python/$PYTHON_VERSION/etc/profile.d/conda.sh
+      if [[ $HPC_PYTHON_MODULE == "miniconda"* ]]; then
+        source /share/apps/python/$HPC_PYTHON_MODULE/etc/profile.d/conda.sh
       fi &&
       export SPACK_PYTHON=$(which python3) &&
 
