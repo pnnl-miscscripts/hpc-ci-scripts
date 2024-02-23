@@ -116,7 +116,7 @@ include:
     USER: svcmlops
     FORCE_CLEAN: "false"
     SPACK_CLEAN: "false"
-    PYTHON_VERSION: miniconda23.5.2
+    HPC_PYTHON_MODULE: miniconda23.5.2
     COMPILER: gcc
     COMPILER_VERSION: 9.1.0
     VERBOSE_OUTPUT: "false"
