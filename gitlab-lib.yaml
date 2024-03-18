@@ -1,5 +1,5 @@
 include:
-  - remote: 'https://raw.githubusercontent.com/pnnl-miscscripts/gitlab-lib/v1/gitlab-lib.yaml'
+  - remote: "https://raw.githubusercontent.com/pnnl-miscscripts/gitlab-lib/v1/gitlab-lib.yaml"
 
 .pnnl_default_vars:
   variables:
@@ -110,6 +110,7 @@ include:
     TEST_SCRIPT: ./spack_script.sh
     # This has to be a valid branch/remote ref - raw commit hash could work but would need to refactor
     SPACK_VERSION: develop
+    SPACK_UPDATE: "false"
     SPACK_INSTALL: /rcfs/scratch/$USER/spack
     SPACK_YAML: ./spack.yaml
     NUM_CORES: 64
@@ -182,10 +183,15 @@ include:
         rm -rfd ~/.spack &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi &&
+
       pushd $SPACK_INSTALL &&
-      # Fetch SPACK_VERSION's latest changes and reset branch to that
-      git fetch origin $SPACK_VERSION &&
-      git reset --hard origin/$SPACK_VERSION &&
+
+      # If we are updating (SPACK_UPDATE == true)
+      if [[ $SPACK_UPDATE == "true" ]]; then
+        # Fetch SPACK_VERSION's latest changes and reset branch to that
+        git fetch origin $SPACK_VERSION &&
+        git reset --hard origin/$SPACK_VERSION &&
+      fi &&
 
       # Attempt to set spack temp directories to make things easier for users...
       export tempdir=$SPACK_INSTALL/../spack-tmp &&
@@ -231,13 +237,13 @@ include:
       if [[ $SPACK_CLEAN == "true" ]]; then
         spack $SPACK_DEBUG -e tmp-env clean -abm
       fi
-      
+
       chmod -R ugo+wrx $SPACK_INSTALL > /dev/null 2>&1
       chmod -R ugo+wrx $SPACK_USER_CACHE_PATH > /dev/null 2>&1
-      
+
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
       fi
-      
+
       exit $ret_code
-      EOF   
+      EOF
