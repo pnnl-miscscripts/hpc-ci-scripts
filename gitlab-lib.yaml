@@ -167,9 +167,10 @@ include:
       fi
       . /etc/bashrc
       groups
+      whoami
       module purge
       module load git
-      git --version
+      git --version &&
 
       # Configure proxy...
       # export HTTPS_PROXY=http://proxy01.pnl.gov:3128
@@ -183,7 +184,7 @@ include:
         # Need to change this if spack-tmp is ever changed...
         rm -rfd $SPACK_INSTALL/../spack-tmp &&
         rm -rfd ~/.spack &&
-        git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
+        git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL &&
       fi &&
 
       pushd $SPACK_INSTALL &&
