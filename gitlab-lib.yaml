@@ -45,7 +45,6 @@ include:
       #  NOTES:  WORKDIR is on constance/deception/newell
       #          ./      is only on the Kubernetes instance
       #
-      set -xv
       export WORKDIR="$HOME/gitlab/${CI_PIPELINE_ID}/${WORKDIR_SUFFIX}"
       if [[ ! -d "$WORKDIR" ]]; then
         # if workdir already exists, we're in the testing job
@@ -89,7 +88,6 @@ include:
       done
       echo "Finished batch job with exit code: $res"
       rm "$WORKDIR/jobid_${jobid}"
-      set +xv
       exit $res
 
 .pnnl_cleanup_template:
