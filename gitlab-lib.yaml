@@ -11,7 +11,7 @@ include:
     GIT_SUBMODULE_STRATEGY: none
     SLURM_Q: shared,short
     NTASKS: 3
-    TIME_LIMIT: 1:00:00
+    TIME_LIMIT: "1:00:00"
     SLURM_ACCT: ops
     SLURM_ARGS: " --exclusive "
     MY_CLUSTER: deception
