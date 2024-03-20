@@ -66,7 +66,7 @@ include:
       # timed out by gitlab through the UI
       # TODO - maybe fix the permissions on this outside of pipeline
       chmod +x $TEST_SCRIPT
-      STBATCH_CMD="sbatch --export==ALL -A ${SLURM_ACCT} ${SLURM_ARGS} --ntasks=${NTASKS} -p ${SLURM_Q} -o ${output} -e ${output} -t ${TIME_LIMIT} ${TEST_SCRIPT}"
+      SBATCH_CMD="sbatch --export==ALL -A ${SLURM_ACCT} ${SLURM_ARGS} --ntasks=${NTASKS} -p ${SLURM_Q} -o ${output} -e ${output} -t ${TIME_LIMIT} ${TEST_SCRIPT}"
       echo "Using sbatch command: " $SBATCH_CMD
       jobid=$(${SBATCH_CMD})
       export jobid=$(echo $jobid | cut -f4 -d' ')
