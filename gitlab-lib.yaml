@@ -184,7 +184,7 @@ include:
         # Need to change this if spack-tmp is ever changed...
         rm -rfd $SPACK_INSTALL/../spack-tmp &&
         rm -rfd ~/.spack &&
-        git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL &&
+        git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
       fi
 
       pushd $SPACK_INSTALL
