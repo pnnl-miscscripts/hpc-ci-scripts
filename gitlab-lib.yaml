@@ -161,6 +161,7 @@ include:
 
         exit $2
       }
+      set -xv
       # If verbose output, toggle xv
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set -xv
@@ -247,6 +248,7 @@ include:
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
       fi
+      set +xv
 
       exit $ret_code
       EOF
