@@ -129,7 +129,7 @@ include:
       # Create the shell script to be ran in SLURM job
       # Adding this script to heredoc to run in SLURM job
       cat << 'EOF' > spack_script.sh
-      #!/bin/bash
+      #!/bin/bash -xv
       exit() {
         # Clear all trap handlers so this isn't echo'ed multiple times, potentially
         # throwing off the CI script watching for this output
