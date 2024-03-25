@@ -65,7 +65,8 @@ include:
       # timed out by gitlab through the UI
       # TODO - maybe fix the permissions on this outside of pipeline
       chmod +x $TEST_SCRIPT
-      SBATCH_CMD="sbatch --export==ALL -A ${SLURM_ACCT} ${SLURM_ARGS} --ntasks=${NTASKS} -p ${SLURM_Q} -o ${output} -e ${output} -t ${TIME_LIMIT} ${TEST_SCRIPT}"
+      EXPORT_LIST=SPACK_VERSION,SPACK_UPDATE,SPACK_INSTALL,SPACK_YAML,NUM_CORES,USER,FORCE_CLEAN,SPACK_CLEAN,HPC_PYTHON_MODULE,COMPILER,COMPILER_VERSION,VERBOSE_OUTPUT,VERBOSE_SPACK
+      SBATCH_CMD="sbatch --export==ALL,${EXPORT_LIST} -A ${SLURM_ACCT} ${SLURM_ARGS} --ntasks=${NTASKS} -p ${SLURM_Q} -o ${output} -e ${output} -t ${TIME_LIMIT} ${TEST_SCRIPT}"
       echo "Using sbatch command: " $SBATCH_CMD
       jobid=$(${SBATCH_CMD})
       export jobid=$(echo $jobid | cut -f4 -d' ')
@@ -126,24 +127,6 @@ include:
     VERBOSE_SPACK: "false"
   before_script:
     - |
-      # Since the environment variables used in this job need to be exported
-      # We do that here in the before_script so that different variables can be used for each
-      # TODO - this is an ugly hack
-      export TEST_SCRIPT=$TEST_SCRIPT
-      export SPACK_VERSION=$SPACK_VERSION
-      export SPACK_UPDATE=$SPACK_UPDATE
-      export SPACK_INSTALL=$SPACK_INSTALL
-      export SPACK_YAML=$SPACK_YAML
-      export NUM_CORES=$NUM_CORES
-      export USER=$USER
-      export FORCE_CLEAN=$FORCE_CLEAN
-      export SPACK_CLEAN=$SPACK_CLEAN
-      export HPC_PYTHON_MODULE=$HPC_PYTHON_MODULE
-      export COMPILER=$COMPILER
-      export COMPILER_VERSION=$COMPILER_VERSION
-      export VERBOSE_OUTPUT=$VERBOSE_OUTPUT
-      export VERBOSE_SPACK=$VERBOSE_SPACK
-
       # Create the shell script to be ran in SLURM job
       # Adding this script to heredoc to run in SLURM job
       cat << 'EOF' > spack_script.sh
