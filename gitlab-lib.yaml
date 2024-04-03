@@ -11,7 +11,7 @@ include:
     GIT_SUBMODULE_STRATEGY: none
     SLURM_Q: shared,short
     NTASKS: 3
-    TIME_LIMIT: 1:00:00
+    TIME_LIMIT: "1:00:00"
     SLURM_ACCT: ops
     SLURM_ARGS: " --exclusive "
     MY_CLUSTER: deception
@@ -45,7 +45,6 @@ include:
       #  NOTES:  WORKDIR is on constance/deception/newell
       #          ./      is only on the Kubernetes instance
       #
-      set -xv
       export WORKDIR="$HOME/gitlab/${CI_PIPELINE_ID}/${WORKDIR_SUFFIX}"
       if [[ ! -d "$WORKDIR" ]]; then
         # if workdir already exists, we're in the testing job
@@ -66,7 +65,8 @@ include:
       # timed out by gitlab through the UI
       # TODO - maybe fix the permissions on this outside of pipeline
       chmod +x $TEST_SCRIPT
-      STBATCH_CMD="sbatch --export==ALL -A ${SLURM_ACCT} ${SLURM_ARGS} --ntasks=${NTASKS} -p ${SLURM_Q} -o ${output} -e ${output} -t ${TIME_LIMIT} ${TEST_SCRIPT}"
+      EXPORT_LIST=SPACK_VERSION,SPACK_UPDATE,SPACK_INSTALL,SPACK_YAML,NUM_CORES,USER,FORCE_CLEAN,SPACK_CLEAN,HPC_PYTHON_MODULE,COMPILER,COMPILER_VERSION,VERBOSE_OUTPUT,VERBOSE_SPACK
+      SBATCH_CMD="sbatch --export==ALL,${EXPORT_LIST} -A ${SLURM_ACCT} ${SLURM_ARGS} --ntasks=${NTASKS} -p ${SLURM_Q} -o ${output} -e ${output} -t ${TIME_LIMIT} ${TEST_SCRIPT}"
       echo "Using sbatch command: " $SBATCH_CMD
       jobid=$(${SBATCH_CMD})
       export jobid=$(echo $jobid | cut -f4 -d' ')
@@ -89,7 +89,6 @@ include:
       done
       echo "Finished batch job with exit code: $res"
       rm "$WORKDIR/jobid_${jobid}"
-      set +xv
       exit $res
 
 .pnnl_cleanup_template:
@@ -163,15 +162,17 @@ include:
 
         exit $2
       }
+      set -xv
       # If verbose output, toggle xv
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set -xv
       fi
       . /etc/bashrc
       groups
+      whoami
       module purge
       module load git
-      git --version
+      git --version &&
 
       # Configure proxy...
       # export HTTPS_PROXY=http://proxy01.pnl.gov:3128
@@ -186,16 +187,16 @@ include:
         rm -rfd $SPACK_INSTALL/../spack-tmp &&
         rm -rfd ~/.spack &&
         git clone --depth=1 -c feature.manyFiles=true https://github.com/spack/spack.git $SPACK_INSTALL
-      fi &&
+      fi
 
-      pushd $SPACK_INSTALL &&
+      pushd $SPACK_INSTALL
 
       # If we are updating (SPACK_UPDATE == true)
       if [[ $SPACK_UPDATE == "true" ]]; then
         # Fetch SPACK_VERSION's latest changes and reset branch to that
         git fetch origin $SPACK_VERSION &&
-        git reset --hard origin/$SPACK_VERSION &&
-      fi &&
+        git reset --hard origin/$SPACK_VERSION
+      fi
 
       # Attempt to set spack temp directories to make things easier for users...
       export tempdir=$SPACK_INSTALL/../spack-tmp &&
@@ -248,6 +249,7 @@ include:
       if [[ $VERBOSE_OUTPUT == "true" ]]; then
         set +xv
       fi
+      set +xv
 
       exit $ret_code
       EOF
